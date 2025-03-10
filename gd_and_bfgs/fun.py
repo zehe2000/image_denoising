@@ -1,10 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-#This is our function:
-#-Latex Code: f(x) = \sum_{i,j}\left ( \sqrt{(x_{i,j} - y_{i,j})^2 +1} + 
-# \frac{1}{2} \sqrt{(x_{i,j} - x_{i+1,j})^2 + (x_{i,j} - x_{i,j+1})^2 +1} \right)
-
 def f(x, y, alpha, bfgs=False):
     """
     Computes the energy for the optimization problem
