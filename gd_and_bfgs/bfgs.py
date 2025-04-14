@@ -1,5 +1,7 @@
+
+
 import numpy as np
-from gd_and_bfgs.fun import f, f_grad
+from fun import f, f_grad
 from scipy.optimize import minimize
 
 
@@ -20,7 +22,7 @@ def bfgs(img, smoothness):
     y = img.astype(np.float64)
     
     #energy function
-    fun = lambda x: f(x, y, smoothness, bfgs=True) 
+    fun = lambda x: f(x, y.flatten(), smoothness, bfgs=True) 
     #gradient of the energy function
     jac = lambda x: f_grad(x, y.flatten(), smoothness) 
     

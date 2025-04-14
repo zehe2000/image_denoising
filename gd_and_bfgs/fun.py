@@ -1,3 +1,5 @@
+
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -15,8 +17,8 @@ def f(x, y, alpha, bfgs=False):
         en_data (float): energy value of the data term
         en_smooth (float): energy value of the smoothness term
     """
-    H, W = y.shape
-    x = x.reshape(H, W)
+    if x.ndim == 1: # reshape x to img dims
+        x = x.reshape(60, 80)
     
     # Data term
     data_diff = x - y
@@ -25,10 +27,10 @@ def f(x, y, alpha, bfgs=False):
     # Smoothness term
     dx = x_dx(x)
     dy = x_dy(x)
-    en_smooth = np.sum(np.sqrt(dx**2 + dy**2 + 1))
+    en_smooth = alpha * np.sum(np.sqrt(dx**2 + dy**2 + 1))
     
     # Total energy
-    en_total = en_data + (alpha / 2) * en_smooth
+    en_total = en_data + en_smooth
     
     if bfgs:
         return en_total
@@ -42,10 +44,12 @@ def x_dx(img: np.ndarray):
     Returns:
         x_r (np.ndarray): derivative of the image in the x direction
     """
-    x_r = np.zeros_like(img)
-    x_r[:, :-1] = img[:, 1:]
-    x_r[:, -1] = img[:, -1]
-    return img - x_r
+    assert img.ndim == 2
+    x_r = np.zeros(img.shape)
+    x_r[:,:-1] = img[:, 1:] # x_00 is never subtracted so we save this space
+    x_r[:,-1] = img[:,-1] # last entry is mirrored
+    x_dx = img - x_r
+    return x_dx
 
 def x_dy(img: np.ndarray):
     """computes the derivative of the image in the y direction
@@ -54,10 +58,13 @@ def x_dy(img: np.ndarray):
     Returns:
         x_d (np.ndarray): derivative of the image in the y direction
     """
-    x_d = np.zeros_like(img)
-    x_d[:-1, :] = img[1:, :]
-    x_d[-1, :] = img[-1, :]
-    return img - x_d
+    assert img.ndim == 2
+    x_b = np.zeros(img.shape)
+    x_b[:-1,:] = img[1:, :] # same as x_dx but for j+1
+    x_b[-1,:] = img[-1,:]
+    x_dy = img - x_b
+    return x_dy
+    
         
     
 def f_grad(x, y, alpha):
@@ -70,25 +77,35 @@ def f_grad(x, y, alpha):
     Returns:
         gradient (np.ndarray [60, 80] or [4800,]): gradient matrix
     """
+    
     # gradient in x direction
-    x_dx = x_dx(x)
+    get_x_dx = x_dx(x)
     
     #gradient in y direction
-    x_dy = x_dy(x)
+    get_x_dy = x_dy(x)
     
     grad = np.zeros_like(x)
     
     #derivative of the data term
     grad = (x - y) / np.sqrt((x - y)**2 + 1)
     
+    undo = False
+    if x.ndim == 1:
+        x = x.reshape(60, 80)
+        undo = True
+
+    
     #derivative of the smoothness term
-    denominator = np.sqrt(x_dx**2 + x_dy**2 + 1)
-    grad+= alpha * (x_dx + x_dy) / denominator
+    denominator = np.sqrt(get_x_dx**2 + get_x_dy**2 + 1)
+    grad += alpha * (get_x_dx + get_x_dy) / denominator
     
-    grad1 = alpha * (x + x_dx) / denominator
-    grad2= alpha * (x + x_dy) / denominator
+    grad1 = - alpha * get_x_dx / denominator
+    grad2 = - alpha * get_x_dy / denominator
     
-    grad[:, 1:] -= grad1[:, :-1]
-    grad[1:, :] -= grad2[:-1, :]
+    grad[:, 1:] += grad1[:, 0 :-1]
+    grad[1:, :] += grad2[0 :-1, :]
+    
+    if undo: # for scipy bfgs go back to 1 dim
+        grad_smooth = grad_smooth.reshape(-1)
     
     return grad
