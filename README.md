@@ -38,5 +38,5 @@ The repository is organized into two main directories to separate the optimizati
 
 1. **Clone or Download:**  
    ```bash
-   git clone https://github.com/
+   git clone https://github.com/zehe2000/image_denoising.git
    cd image-denoising
