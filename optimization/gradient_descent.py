@@ -1,5 +1,5 @@
 import numpy as np
-from fun import f, f_grad
+from utils import f, f_grad
 
 def gradient_descent(img, smoothness = 0.5):
     """ Optimization with gradient descent and backtracking line search

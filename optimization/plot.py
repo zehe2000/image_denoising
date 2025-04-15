@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-from fun import f, f_grad  
+from utils import f, f_grad  
 from gradient_descent import gradient_descent
 from bfgs import bfgs
 
